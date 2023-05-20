@@ -121,7 +121,7 @@ classdef Seventh < matlab.apps.AppBase
             end
             
 
-            title1 = ['Gain and Phase response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
+            title1 = ['Gain and Phase response of ', num2str(freq(x)), '  - ' , num2str(freq(x+1)), ' Hz filter'];
             title2 = ['Impulse response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
             title3 = ['Step response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
             title4 = ['Zeros and Poles of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
