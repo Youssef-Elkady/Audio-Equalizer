@@ -1,4 +1,4 @@
-classdef Seventh < matlab.apps.AppBase
+classdef Audio_Equalizer < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
@@ -18,6 +18,10 @@ classdef Seventh < matlab.apps.AppBase
         Panel                       matlab.ui.container.Panel
         FrequencyBandGainsPanel     matlab.ui.container.Panel
         PlotButton                  matlab.ui.control.Button
+        ResetButton                 matlab.ui.control.Button
+        ApplynewfiltersButton       matlab.ui.control.Button
+        SounddoublenewFSButton      matlab.ui.control.Button
+        SoundhalfnewFSButton        matlab.ui.control.Button
         FreuquencyDomainPanel       matlab.ui.container.Panel
         UIAxes3                     matlab.ui.control.UIAxes
         UIAxes4                     matlab.ui.control.UIAxes
@@ -27,8 +31,6 @@ classdef Seventh < matlab.apps.AppBase
         BeforeLabel_2               matlab.ui.control.Label
         UIAxes6                     matlab.ui.control.UIAxes
         UIAxes5                     matlab.ui.control.UIAxes
-        ResetButton                 matlab.ui.control.Button
-        ApplynewfiltersButton       matlab.ui.control.Button
         HZSliderLabel               matlab.ui.control.Label
         gain_170                    matlab.ui.control.Slider
         HZSlider_2Label             matlab.ui.control.Label
@@ -121,7 +123,7 @@ classdef Seventh < matlab.apps.AppBase
             end
             
 
-            title1 = ['Gain and Phase response of ', num2str(freq(x)), '  - ' , num2str(freq(x+1)), ' Hz filter'];
+            title1 = ['Gain and Phase response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
             title2 = ['Impulse response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
             title3 = ['Step response of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
             title4 = ['Zeros and Poles of ', num2str(freq(x)), ' - ' , num2str(freq(x+1)), ' Hz filter'];
@@ -172,7 +174,7 @@ classdef Seventh < matlab.apps.AppBase
             title(title7); 
             xlabel('Frequency (Hz)'); 
             ylabel('Phase');
-
+            
             
             %fvtool(b, a);
 
@@ -267,14 +269,53 @@ classdef Seventh < matlab.apps.AppBase
             else
                 app.newfs = str2double(app.newfs);
             end
-            app.new_signal = resample(app.new_signal,app.newfs,app.fs); 
-            sound(app.new_signal, app.newfs);    
+            %app.new_signal = resample(app.new_signal,app.newfs,app.fs); 
+                
         end
 
         % Button pushed function: SaveButton
         function SaveButtonPushed(app, event)
-            audiowrite("output_file05.wav",app.new_signal, app.newfs);
+            audiowrite("output_file_half.wav",app.new_signal, app.newfs/2);
+            audiowrite("output_file_double.wav",app.new_signal, app.newfs*2);
+
             
+        end
+
+        % Button pushed function: SounddoublenewFSButton
+        function SounddoublenewFSButtonPushed(app, event)
+            sound(app.new_signal, app.newfs*2);
+            half_t = linspace(0,length(app.y)/(app.newfs*2),length(app.y));
+            figure;
+            subplot(2,1,1);
+            plot(half_t,app.y);
+            title("Output signal for double inputted FS");
+            %Frequency Domain           
+            L1 = length(app.y);
+            f_xaxis1 = linspace(-app.newfs,app.newfs,L1);
+            %Frequency Magnitude            
+            fmag1 = abs(fftshift(fft(app.y))/app.newfs*2); %we divide by L1 to normalize
+            subplot(2,1,2);
+            plot(f_xaxis1,fmag1);
+            title("magnitude of Double fs");
+        end
+
+        % Button pushed function: SoundhalfnewFSButton
+        function SoundhalfnewFSButtonPushed(app, event)
+            sound(app.new_signal, app.newfs/2);
+            Double_t = linspace(0,length(app.y)/(app.newfs/2),length(app.y));
+            figure;
+            subplot(2,1,1);
+            plot(Double_t,app.y);
+            title("Output signal for half inputted FS");
+            %Frequency Domain           
+            L1 = length(app.y);
+            f_xaxis1 = linspace(-app.newfs/4,app.newfs/4,L1);
+
+            %Frequency Magnitude            
+            fmag1 = abs(fftshift(fft(app.y))/app.newfs/2); %we divide by L1 to normalize            
+            subplot(2,1,2);
+            plot(f_xaxis1,fmag1);          
+            title("magnitude of half fs");
             
         end
     end
@@ -380,8 +421,34 @@ classdef Seventh < matlab.apps.AppBase
             app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
             app.PlotButton.FontSize = 18;
             app.PlotButton.FontWeight = 'bold';
-            app.PlotButton.Position = [290 22 100 29];
+            app.PlotButton.Position = [503 20 100 29];
             app.PlotButton.Text = 'Plot';
+
+            % Create ResetButton
+            app.ResetButton = uibutton(app.FrequencyBandGainsPanel, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
+            app.ResetButton.FontSize = 14;
+            app.ResetButton.Position = [622 22 132 29];
+            app.ResetButton.Text = 'Reset';
+
+            % Create ApplynewfiltersButton
+            app.ApplynewfiltersButton = uibutton(app.FrequencyBandGainsPanel, 'push');
+            app.ApplynewfiltersButton.ButtonPushedFcn = createCallbackFcn(app, @ApplynewfiltersButtonPushed, true);
+            app.ApplynewfiltersButton.FontSize = 14;
+            app.ApplynewfiltersButton.Position = [24 21 136 29];
+            app.ApplynewfiltersButton.Text = 'Apply new filters';
+
+            % Create SounddoublenewFSButton
+            app.SounddoublenewFSButton = uibutton(app.FrequencyBandGainsPanel, 'push');
+            app.SounddoublenewFSButton.ButtonPushedFcn = createCallbackFcn(app, @SounddoublenewFSButtonPushed, true);
+            app.SounddoublenewFSButton.Position = [178.5 21 139 28];
+            app.SounddoublenewFSButton.Text = 'Sound double new FS';
+
+            % Create SoundhalfnewFSButton
+            app.SoundhalfnewFSButton = uibutton(app.FrequencyBandGainsPanel, 'push');
+            app.SoundhalfnewFSButton.ButtonPushedFcn = createCallbackFcn(app, @SoundhalfnewFSButtonPushed, true);
+            app.SoundhalfnewFSButton.Position = [347 22 139 28];
+            app.SoundhalfnewFSButton.Text = 'Sound half new FS';
 
             % Create FreuquencyDomainPanel
             app.FreuquencyDomainPanel = uipanel(app.Panel);
@@ -440,7 +507,7 @@ classdef Seventh < matlab.apps.AppBase
             title(app.UIAxes6, '')
             xlabel(app.UIAxes6, 'time(s)')
             ylabel(app.UIAxes6, 'phase')
-            app.UIAxes6.Position = [431 1 247 162];
+            app.UIAxes6.Position = [429 14 247 162];
 
             % Create UIAxes5
             app.UIAxes5 = uiaxes(app.FreuquencyDomainPanel);
@@ -448,20 +515,6 @@ classdef Seventh < matlab.apps.AppBase
             xlabel(app.UIAxes5, 'time(s)')
             ylabel(app.UIAxes5, 'phase')
             app.UIAxes5.Position = [25 12 266 164];
-
-            % Create ResetButton
-            app.ResetButton = uibutton(app.Panel, 'push');
-            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
-            app.ResetButton.FontSize = 14;
-            app.ResetButton.Position = [516 453 132 29];
-            app.ResetButton.Text = 'Reset';
-
-            % Create ApplynewfiltersButton
-            app.ApplynewfiltersButton = uibutton(app.Panel, 'push');
-            app.ApplynewfiltersButton.ButtonPushedFcn = createCallbackFcn(app, @ApplynewfiltersButtonPushed, true);
-            app.ApplynewfiltersButton.FontSize = 14;
-            app.ApplynewfiltersButton.Position = [42 452 136 29];
-            app.ApplynewfiltersButton.Text = 'Apply new filters';
 
             % Create HZSliderLabel
             app.HZSliderLabel = uilabel(app.Panel);
@@ -629,7 +682,7 @@ classdef Seventh < matlab.apps.AppBase
     methods (Access = public)
 
         % Construct app
-        function app = Seventh
+        function app = Audio_Equalizer
 
             % Create UIFigure and components
             createComponents(app)
